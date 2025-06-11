@@ -13,3 +13,7 @@ card.addEventListener("transitionstart", () => {
     }, 300);
   }
 });
+
+card.addEventListener("mouseleave", () => {
+  verso.style.zIndex = 3;
+});

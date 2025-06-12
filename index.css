@@ -8,7 +8,7 @@
 body {
   background: url("../assets/img/tapis_de_jeu.jpg");
   background-size: cover;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -90,9 +90,13 @@ header > h1 {
 }
 
 .verso {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   background: #ffffff;
   transform: rotateY(180deg);
   z-index: 1;
+  padding: 20px 10% 20px 10%;
 }
 
 .game-card h2 {
@@ -117,14 +121,30 @@ header > h1 {
 }
 
 .game-card p {
-  padding-top: 10px;
-  font-size: 18px;
-  margin: 10px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-size: 15px;
   text-align: justify;
 }
 
 .game-card p span {
+  font-size: 18px;
   text-align: center;
+  text-transform: uppercase;
   font-weight: bold;
-  color: #000000;
+  color: #9451E2;
+}
+
+.game-card .verso a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  color: #9451E2;
+  font-weight: bold;
+  font-size: 20px;
+  border: solid 5px #9451E2;
+  padding: 10px;
+  border-radius: 999px;
 }

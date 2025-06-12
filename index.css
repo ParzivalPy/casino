@@ -6,7 +6,7 @@
 }
 
 body {
-  background: url("../assets/img/tapis_de_jeu.jpg");
+  background: url("assets/img/tapis_de_jeu.jpg");
   background-size: cover;
   height: 100vh;
   display: flex;
@@ -79,7 +79,7 @@ header > h1 {
 }
 
 .recto {
-  background: url("../assets/img/blue-card.jpg");
+  background: url("assets/img/blue-card.jpg");
   background-size: auto 100%;
   background-position: center;
   background-repeat: no-repeat;

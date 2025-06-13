@@ -28,13 +28,11 @@ function deckCreation(deck_num) {
 }
 
 function drawRandomCard(deck) {
-  const randomIndex = Math.floor(Math.random() * deck.length);
   if (deck.length === 0) {
     throw new Error("No cards left in the deck");
   }
-  let temp = deck.splice(randomIndex, 1)[0];
-  delete deck[randomIndex];
-  return temp;
+  const randomIndex = Math.floor(Math.random() * deck.length);
+  return deck.splice(randomIndex, 1)[0]; // Correctly removes and returns the card
 }
 
 function countCardsInHand(hand) {
@@ -47,11 +45,7 @@ function countCardsInHand(hand) {
     ) {
       count += 10;
     } else if (card.value === "Ace") {
-      if (count + 11 > 21) {
-        count += 1;
-      } else {
-        count += 11;
-      }
+      count += count + 11 > 21 ? 1 : 11;
     } else {
       count += parseInt(card.value);
     }
@@ -63,26 +57,47 @@ function draw(deck, hand) {
   if (deck.length === 0) {
     throw new Error("No cards left in the deck");
   }
-  let card = drawRandomCard(deck);
+  const card = drawRandomCard(deck);
   hand.push(card);
-  countCardsInHand(hand);
-  printHand(deck, hand);
   return card;
 }
 
-function printHand(deck, hand) {
+function printHand(hand) {
   console.log("Player's hand:", hand);
   console.log("Count of cards in hand:", countCardsInHand(hand));
-  console.log(deck);
+}
+
+function playerTurnDraw(deck, hand, end_turn, can_play) {
+  if (!end_turn && can_play) {
+    const card = draw(deck, hand);
+    const total = countCardsInHand(hand);
+    printHand(hand);
+
+    if (total > 21) {
+      console.log("Bust! Player exceeded 21 points.");
+      end_turn = true; // End the turn if the player exceeds 21
+    }
+  }
 }
 
 function main() {
-  let deck = deckCreation(5);
-  player_hand = [];
+  const deck = deckCreation(5);
+
+  // Player setup
+  const player_hand = [];
+  let can_play = false;
+  let end_turn = false;
+
+  // Initial draw for the player
   for (let i = 0; i < 2; i++) {
     player_hand.push(drawRandomCard(deck));
   }
-  draw(deck, player_hand);
+  can_play = true;
+
+  // Add event listener for drawing cards
+  document.getElementById("draw").addEventListener("click", () => {
+    playerTurnDraw(deck, player_hand, end_turn, can_play);
+  });
 }
 
 main();

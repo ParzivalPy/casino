@@ -62,8 +62,8 @@ function draw(deck, hand) {
   return card;
 }
 
-function printHand(hand) {
-  console.log("Player's hand:", hand);
+function printHand(hand, who) {
+  console.log(`${who}'s hand:`, hand);
   let score = countCardsInHand(hand);
   console.log("Count of cards in hand:", score);
   return score;
@@ -80,42 +80,121 @@ function playerTurnDraw(deck, hand, can_play, score) {
   }
 }
 
-function playerTurn(player_score, deck) {
-  const player_hand = [];
-  let can_play = false;
+function playerTurn(deck, onPlayerEnd, player_hand) {
+  let can_play = true;
 
   // Initial draw for the player
   for (let i = 0; i < 2; i++) {
     player_hand.push(drawRandomCard(deck));
   }
-  let score = printHand(player_hand);
-  can_play = true;
+  printHand(player_hand);
 
-  if (can_play && score < 21) {
-    // Add event listener for drawing cards
-    document.getElementById("draw").addEventListener("click", () => {
-      playerTurnDraw(deck, player_hand, can_play, score);
-    });
+  // Callback functions for event listeners
+  function drawCard() {
+    if (can_play) {
+      const card = draw(deck, player_hand);
+      const score = countCardsInHand(player_hand);
+      printHand(player_hand);
 
-    // Add event listener for ending the turn
-    document.getElementById("stay").addEventListener("click", () => {
-      can_play = false;
-      document.getElementById("draw").removeEventListener("click");
-      document.getElementById("stay").removeEventListener("click");
-      console.log("Player's final hand:", player_hand);
-      console.log("Final count of cards in hand:", countCardsInHand(player_hand)
-      );
-    });
+      if (score > 21) {
+        console.log("Bust! Player exceeded 21 points.");
+        endTurn();
+      }
+    }
   }
-  return player_score;
+
+  function endTurn() {
+    can_play = false;
+    document.getElementById("draw").removeEventListener("click", drawCard);
+    document.getElementById("stay").removeEventListener("click", endTurn);
+    console.log("Player's final hand:", player_hand);
+    console.log("Final count of cards in hand:", countCardsInHand(player_hand));
+
+    // Call the callback to transition to dealerTurn
+    if (typeof onPlayerEnd === "function") {
+      onPlayerEnd();
+    }
+  }
+
+  // Add event listeners
+  document.getElementById("draw").addEventListener("click", drawCard);
+  document.getElementById("stay").addEventListener("click", endTurn);
+}
+
+function dealerTurn(deck, dealer_hand) {
+  let can_play = true;
+
+  // Initial draw for the dealer
+  for (let i = 0; i < 2; i++) {
+    dealer_hand.push(drawRandomCard(deck));
+  }
+  printHand(dealer_hand);
+
+  while (can_play) {
+    const score = countCardsInHand(dealer_hand);
+    if (score < 17) {
+      draw(deck, dealer_hand);
+      printHand(dealer_hand);
+    } else if (score > 21) {
+      console.log("Dealer busts! Dealer exceeded 21 points.");
+      can_play = false;
+    } else {
+      console.log("Dealer stays.");
+      can_play = false;
+    }
+  }
+
+  console.log("Dealer's final hand:", dealer_hand);
+  console.log("Final count of cards in hand:", countCardsInHand(dealer_hand));
+}
+
+function checkWinner(playerScore, dealerScore) {
+  if (playerScore > 21) {
+    return "Dealer wins! Player busted.";
+  } else if (dealerScore > 21) {
+    return "Player wins! Dealer busted.";
+  } else if (playerScore > dealerScore) {
+    return "Player wins!";
+  } else if (dealerScore > playerScore) {
+    return "Dealer wins!";
+  } else {
+    return "It's a tie!";
+  }
+}
+
+function manageCredits(credits, bet) {
+  console.log(`You currently have ${credits} credits.`);
+  bet = parseInt(prompt("Enter your bet amount: "), 10);
+  if (bet > credits) {
+    console.log("Not enough credits to place this bet.");
+    return credits; // Return unchanged credits
+  }
+  credits -= bet;
+  console.log(`Bet placed: ${bet}. Remaining credits: ${credits}`);
+  return credits;
 }
 
 function main() {
   const deck = deckCreation(5);
+  let credits = 1000; // Initial credits
+  const player_hand = []; // Déclare player_hand ici pour qu'elle soit accessible
+  const dealer_hand = []; // Déclare dealer_hand ici pour qu'elle soit accessible
 
-  // Player setup
-  let player_score = 0;
-  playerTurn(player_score, deck);
+  let bet = 0;
+  manageCredits(credits, bet);
+  // Start player turn
+  playerTurn(deck, () => {
+    // Transition to dealer turn after player ends their turn
+    dealerTurn(deck, dealer_hand);
+
+    // Calculate scores
+    const playerScore = countCardsInHand(player_hand);
+    const dealerScore = countCardsInHand(dealer_hand);
+
+    // Determine the winner
+    const result = checkWinner(playerScore, dealerScore);
+    console.log(result);
+  }, player_hand);
 }
 
 main();

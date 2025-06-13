@@ -10,3 +10,38 @@ body {
   background-size: cover;
   height: 100vh;
 }
+
+.actions {
+  position: absolute;
+  display: flex;
+  bottom: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
+
+.actions > * {
+  width: 200px;
+  height: 100px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#split {
+  background-color: #ffa318;
+}
+
+#draw {
+  background-color: #4CAF50;
+}
+
+#stay {
+  background-color: #D33C3C
+}
+
+#double {
+  background-color: #2196F3;
+}

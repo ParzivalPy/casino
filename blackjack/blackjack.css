@@ -17,7 +17,11 @@ body {
   bottom: 20px;
   width: 100%;
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 50px;
+  align-items: end;
+  margin-bottom: 25px;
 }
 
 .actions > * {
@@ -28,6 +32,11 @@ body {
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
+}
+
+.actions #split, .actions #double {
+  width: 150px;
+  height: 75px;
 }
 
 #split {

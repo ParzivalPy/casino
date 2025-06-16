@@ -6,23 +6,39 @@
     <title>Black Jack</title>
     <link rel="stylesheet" href="blackjack.css" />
     <script src="blackjack-display.js" defer></script>
-    <!-- <script src="blackjack.js" defer></script> -->
+    <script src="blackjack.js" defer></script>
     <link rel="icon" href="../assets/img/carreau.png" type="image/png" />
   </head>
   <body>
+    <div class="starter-box" id="starter-box">
+      <h1>Black Jack</h1>
+      <p>Welcome to the Black Jack game!</p>
+      <button id="start-game">Start Game</button>
+    </div>
+    <div class="starter-box-blur" id="starter-box-blur"></div>
     <div class="table">
       <div class="dealer" id="dealer">
         <div class="dealer-hand" id="dealer-hand">
           <div class="game-card-container">
-            <div class="game-card">
+            <div class="game-card turned">
               <div class="recto"></div>
-              <div class="verso"></div>
+              <div class="verso">
+                <div class="number"></div>
+                <div class="suit">
+                  <img src="../assets/img/carreau.png" alt="carreau" />
+                </div>
+              </div>
             </div>
           </div>
           <div class="game-card-container">
             <div class="game-card">
               <div class="recto"></div>
-              <div class="verso"></div>
+              <div class="verso">
+                <div class="number"></div>
+                <div class="suit">
+                  <img src="../assets/img/carreau.png" alt="carreau" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -34,13 +50,23 @@
           <div class="game-card-container">
             <div class="game-card">
               <div class="recto"></div>
-              <div class="verso"></div>
+              <div class="verso">
+                <div class="number"></div>
+                <div class="suit">
+                  <img src="../assets/img/carreau.png" alt="carreau" />
+                </div>
+              </div>
             </div>
           </div>
           <div class="game-card-container">
             <div class="game-card">
               <div class="recto"></div>
-              <div class="verso"></div>
+              <div class="verso">
+                <div class="number"></div>
+                <div class="suit">
+                  <img src="../assets/img/carreau.png" alt="carreau" />
+                </div>
+              </div>
             </div>
           </div>
         </div>

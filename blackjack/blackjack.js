@@ -87,6 +87,8 @@ function playerTurn(deck, onPlayerEnd, player_hand) {
   for (let i = 0; i < 2; i++) {
     player_hand.push(drawRandomCard(deck));
   }
+  const score = countCardsInHand(player_hand);
+  document.getElementById("player-score").innerText = score;
   printHand(player_hand);
 
   // Callback functions for event listeners
@@ -94,10 +96,10 @@ function playerTurn(deck, onPlayerEnd, player_hand) {
     if (can_play) {
       const card = draw(deck, player_hand);
       const score = countCardsInHand(player_hand);
+      document.getElementById("player-score").innerText = score;
       printHand(player_hand);
 
-      if (score > 21) {
-        console.log("Bust! Player exceeded 21 points.");
+      if (score >= 21) {
         endTurn();
       }
     }
@@ -132,6 +134,7 @@ function dealerTurn(deck, dealer_hand) {
 
   while (can_play) {
     const score = countCardsInHand(dealer_hand);
+    document.getElementById("dealer-score").innerText = score;
     if (score < 17) {
       draw(deck, dealer_hand);
       printHand(dealer_hand);
@@ -177,28 +180,16 @@ function manageCredits(credits, bet) {
   return bet;
 }
 
-const card = document.querySelector(".game-card");
-const verso = document.querySelector(".verso");
-card.addEventListener("transitionstart", () => {
-  if (verso.style.zIndex == "3") {
+const card = document.querySelectorAll(".game-card");
+card.forEach((c) => {
+  c.addEventListener("transitionstart", () => {
     setTimeout(() => {
-      verso.style.zIndex = 1;
+      c.lastChild.style.zIndex = 3;
     }, 300);
-  } else {
-    setTimeout(() => {
-      verso.style.zIndex = 3;
-    }, 300);
-  }
+  });
 });
 
-card.addEventListener("mouseleave", () => {
-  verso.style.zIndex = 3;
-});
-
-
-function main() {
-  const deck = deckCreation(5);
-  let credits = 1000; // Initial credits
+function main(credits, deck) {
   const player_hand = []; // Déclare player_hand ici pour qu'elle soit accessible
   const dealer_hand = []; // Déclare dealer_hand ici pour qu'elle soit accessible
 
@@ -206,20 +197,31 @@ function main() {
   bet = manageCredits(credits, bet);
   credits -= bet;
   // Start player turn
-  playerTurn(deck, () => {
-    // Transition to dealer turn after player ends their turn
-    dealerTurn(deck, dealer_hand);
+  playerTurn(
+    deck,
+    () => {
+      // Transition to dealer turn after player ends their turn
+      dealerTurn(deck, dealer_hand);
 
-    // Calculate scores
-    const playerScore = countCardsInHand(player_hand);
-    const dealerScore = countCardsInHand(dealer_hand);
+      // Calculate scores
+      const playerScore = countCardsInHand(player_hand);
+      const dealerScore = countCardsInHand(dealer_hand);
 
-    // Determine the winner
-    const result = checkWinner(playerScore, dealerScore, credits, bet);
-    console.log(result);
-  }, player_hand);
+      // Determine the winner
+      const result = checkWinner(playerScore, dealerScore, credits, bet);
+      console.log(result);
+    },
+    player_hand
+  );
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  main();
+const startButton = document.getElementById("start-game");
+startButton.addEventListener("click", () => {
+  document.getElementById("starter-box").remove();
+  document.getElementById("starter-box-blur").remove();
+  setTimeout(() => {
+    const deck = deckCreation(5);
+    let credits = 1000;
+    main(credits, deck);
+  }, 500);
 });

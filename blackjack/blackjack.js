@@ -153,18 +153,23 @@ function dealerTurn(deck, dealer_hand) {
 
 function checkWinner(playerScore, dealerScore, credits, bet) {
   if (playerScore > 21) {
+    changeCredsBet(0, credits);
     return "Dealer wins! Player busted.";
   } else if (dealerScore > 21) {
     credits = credits + 2 * bet;
-    return `Player wins! Dealer busted. New credits: ${credits}`;
+    changeCredsBet(0, credits);
+    return `Player wins! Dealer busted.`;
   } else if (playerScore > dealerScore) {
     credits = credits + 2 * bet;
-    return `Player wins! New credits: ${credits}`;
+    changeCredsBet(0, credits);
+    return `Player wins!`;
   } else if (dealerScore > playerScore) {
+    changeCredsBet(0, credits);
     return "Dealer wins!";
   } else {
     credits += bet; // Return the bet to the player in case of a tie
-    return `It's a tie! Credits returned: ${credits}`;
+    changeCredsBet(0, credits);
+    return `It's a tie!`;
   }
 }
 
@@ -189,6 +194,21 @@ card.forEach((c) => {
   });
 });
 
+function changeCredsBet(bet, credits) {
+  document.getElementById("bet").innerText = bet;
+  document.getElementById("credits").innerText = credits;
+}
+
+function speech(sentence) {
+  let text = new SpeechSynthesisUtterance(sentence);
+
+  text.lang = "en";
+  text.rate = 1;
+  text.pitch = 1;
+
+  window.speechSynthesis.speak(text);
+}
+
 function main(credits, deck) {
   const player_hand = []; // Déclare player_hand ici pour qu'elle soit accessible
   const dealer_hand = []; // Déclare dealer_hand ici pour qu'elle soit accessible
@@ -196,6 +216,8 @@ function main(credits, deck) {
   let bet = 0;
   bet = manageCredits(credits, bet);
   credits -= bet;
+  changeCredsBet(bet, credits);
+
   // Start player turn
   playerTurn(
     deck,
@@ -210,6 +232,7 @@ function main(credits, deck) {
       // Determine the winner
       const result = checkWinner(playerScore, dealerScore, credits, bet);
       console.log(result);
+      speech(result)
     },
     player_hand
   );

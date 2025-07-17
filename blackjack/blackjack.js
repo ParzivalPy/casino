@@ -152,24 +152,25 @@ function dealerTurn(deck, dealer_hand) {
 }
 
 function checkWinner(playerScore, dealerScore, credits, bet) {
+  let newCredits = credits;
   if (playerScore > 21) {
-    changeCredsBet(0, credits);
-    return "Dealer wins! Player busted.";
+    changeCredsBet(0, newCredits);
+    return { message: "Dealer wins! Player busted.", credits: newCredits };
   } else if (dealerScore > 21) {
-    credits = credits + 2 * bet;
-    changeCredsBet(0, credits);
-    return `Player wins! Dealer busted.`;
+    newCredits = newCredits + 2 * bet;
+    changeCredsBet(0, newCredits);
+    return { message: `Player wins! Dealer busted.`, credits: newCredits };
   } else if (playerScore > dealerScore) {
-    credits = credits + 2 * bet;
-    changeCredsBet(0, credits);
-    return `Player wins!`;
+    newCredits = newCredits + 2 * bet;
+    changeCredsBet(0, newCredits);
+    return { message: `Player wins!`, credits: newCredits };
   } else if (dealerScore > playerScore) {
-    changeCredsBet(0, credits);
-    return "Dealer wins!";
+    changeCredsBet(0, newCredits);
+    return { message: "Dealer wins!", credits: newCredits };
   } else {
-    credits += bet; // Return the bet to the player in case of a tie
-    changeCredsBet(0, credits);
-    return `It's a tie!`;
+    newCredits += bet; // Return the bet to the player in case of a tie
+    changeCredsBet(0, newCredits);
+    return { message: `It's a tie!`, credits: newCredits };
   }
 }
 
@@ -209,7 +210,51 @@ function speech(sentence) {
   window.speechSynthesis.speak(text);
 }
 
+function resetGame() {
+  // Reset scores
+  document.getElementById("player-score").innerText = "0";
+  document.getElementById("dealer-score").innerText = "0";
+
+  // Reset bet display
+  document.getElementById("bet").innerText = "0";
+
+  // Hide new round button
+  document.getElementById("new-round").style.display = "none";
+
+  // Show game buttons
+  document.getElementById("draw").style.display = "inline-block";
+  document.getElementById("stay").style.display = "inline-block";
+  document.getElementById("split").style.display = "inline-block";
+  document.getElementById("double").style.display = "inline-block";
+
+  console.log("Game reset for new round");
+}
+
+function endGame() {
+  // Hide game buttons
+  document.getElementById("draw").style.display = "none";
+  document.getElementById("stay").style.display = "none";
+  document.getElementById("split").style.display = "none";
+  document.getElementById("double").style.display = "none";
+
+  // Show new round button
+  document.getElementById("new-round").style.display = "inline-block";
+}
+
+function checkAndRefillDeck(deck) {
+  if (deck.length < 10) {
+    // Si moins de 10 cartes restantes
+    console.log("Deck running low, creating new deck...");
+    const newDeck = deckCreation(5);
+    deck.push(...newDeck);
+    console.log(`Deck refilled. New deck size: ${deck.length}`);
+  }
+}
+
 function main(credits, deck) {
+  // Check and refill deck if needed
+  checkAndRefillDeck(deck);
+
   const player_hand = []; // Déclare player_hand ici pour qu'elle soit accessible
   const dealer_hand = []; // Déclare dealer_hand ici pour qu'elle soit accessible
 
@@ -231,8 +276,36 @@ function main(credits, deck) {
 
       // Determine the winner
       const result = checkWinner(playerScore, dealerScore, credits, bet);
-      console.log(result);
-      speech(result)
+      console.log(result.message);
+      speech(result.message);
+
+      // Update credits with the result
+      credits = result.credits;
+
+      // End the game and show new round button
+      endGame();
+
+      // Set up new round button event listener
+      const newRoundBtn = document.getElementById("new-round");
+      newRoundBtn.onclick = function () {
+        if (credits <= 0) {
+          alert("Game Over! You have no more credits.");
+          location.reload(); // Reload the page to start over
+          return;
+        }
+
+        // Reset the game
+        resetGame();
+
+        // Clear hands
+        player_hand.length = 0;
+        dealer_hand.length = 0;
+
+        // Start new round
+        setTimeout(() => {
+          main(credits, deck);
+        }, 100);
+      };
     },
     player_hand
   );

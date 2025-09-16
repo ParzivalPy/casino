@@ -80,14 +80,12 @@ function playerTurnDraw(deck, hand, can_play, score) {
   }
 }
 
-function playerTurn(deck, onPlayerEnd, player_hand) {
+function playerTurn(deck, onPlayerEnd, player_hand, dealer_hand) {
   let can_play = true;
 
-  // Initial draw sequence: player, dealer, player
-  player_hand.push(drawRandomCard(deck)); // 1ère carte joueur
-  window.dealer_hand = window.dealer_hand || [];
-  window.dealer_hand.push(drawRandomCard(deck)); // 1ère carte dealer
-  player_hand.push(drawRandomCard(deck)); // 2ème carte joueur
+  player_hand.push(drawRandomCard(deck));
+  dealer_hand.push(drawRandomCard(deck));
+  player_hand.push(drawRandomCard(deck));
   const score = countCardsInHand(player_hand);
   document.getElementById("player-score").innerText = score;
   printHand(player_hand);
@@ -305,7 +303,7 @@ function main(credits, deck) {
         // Start new round
         setTimeout(() => {
           main(credits, deck);
-        }, 100);
+        }, 100, dealer_hand);
       };
     },
     player_hand

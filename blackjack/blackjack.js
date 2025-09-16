@@ -83,10 +83,11 @@ function playerTurnDraw(deck, hand, can_play, score) {
 function playerTurn(deck, onPlayerEnd, player_hand) {
   let can_play = true;
 
-  // Initial draw for the player
-  for (let i = 0; i < 2; i++) {
-    player_hand.push(drawRandomCard(deck));
-  }
+  // Initial draw sequence: player, dealer, player
+  player_hand.push(drawRandomCard(deck)); // 1ère carte joueur
+  window.dealer_hand = window.dealer_hand || [];
+  window.dealer_hand.push(drawRandomCard(deck)); // 1ère carte dealer
+  player_hand.push(drawRandomCard(deck)); // 2ème carte joueur
   const score = countCardsInHand(player_hand);
   document.getElementById("player-score").innerText = score;
   printHand(player_hand);

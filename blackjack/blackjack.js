@@ -37,6 +37,7 @@ function drawRandomCard(deck) {
 
 function countCardsInHand(hand) {
   let count = 0;
+  console.log("Counting hand:", hand);
   for (let card of hand) {
     if (
       card.value === "Jack" ||
@@ -83,10 +84,14 @@ function playerTurnDraw(deck, hand, can_play, score) {
 function playerTurn(deck, onPlayerEnd, player_hand, dealer_hand) {
   let can_play = true;
 
-  player_hand.push(drawRandomCard(deck));
+  // Initial draw for the player
+  for (let i = 0; i < 2; i++) {
+    player_hand.push(drawRandomCard(deck));
+  }
   dealer_hand.push(drawRandomCard(deck));
-  player_hand.push(drawRandomCard(deck));
-  const score = countCardsInHand(player_hand);
+  score = countCardsInHand(dealer_hand);
+  document.getElementById("dealer-score").innerText = score;
+  score = countCardsInHand(player_hand);
   document.getElementById("player-score").innerText = score;
   printHand(player_hand);
 
@@ -125,10 +130,7 @@ function playerTurn(deck, onPlayerEnd, player_hand, dealer_hand) {
 function dealerTurn(deck, dealer_hand) {
   let can_play = true;
 
-  // Initial draw for the dealer
-  for (let i = 0; i < 2; i++) {
-    dealer_hand.push(drawRandomCard(deck));
-  }
+  dealer_hand.push(drawRandomCard(deck));
   printHand(dealer_hand);
 
   while (can_play) {
@@ -303,10 +305,11 @@ function main(credits, deck) {
         // Start new round
         setTimeout(() => {
           main(credits, deck);
-        }, 100, dealer_hand);
+        }, 100);
       };
     },
-    player_hand
+    player_hand,
+    dealer_hand
   );
 }
 

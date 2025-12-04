@@ -189,7 +189,7 @@ function playerTurnDraw(deck, hand, can_play, score) {
   }
 }
 
-function playerTurn(deck, onPlayerEnd, player_hand, dealer_hand, onInitialDeal) {
+async function playerTurn(deck, onPlayerEnd, player_hand, dealer_hand, onInitialDeal) {
   let can_play = true;
 
   const playerHandContainer = document.getElementById("player-hand");
@@ -231,7 +231,7 @@ function playerTurn(deck, onPlayerEnd, player_hand, dealer_hand, onInitialDeal) 
     }
   }
 
-  function endTurn() {
+  async function endTurn() {
     can_play = false;
     document.getElementById("draw").removeEventListener("click", drawCard);
     document.getElementById("stay").removeEventListener("click", endTurn);
@@ -239,7 +239,7 @@ function playerTurn(deck, onPlayerEnd, player_hand, dealer_hand, onInitialDeal) 
     console.log("Final count of cards in hand:", countCardsInHand(player_hand));
 
     if (typeof onPlayerEnd === "function") {
-      onPlayerEnd();
+      await onPlayerEnd();
     }
   }
 
@@ -247,7 +247,7 @@ function playerTurn(deck, onPlayerEnd, player_hand, dealer_hand, onInitialDeal) 
   document.getElementById("stay").addEventListener("click", endTurn);
 }
 
-function dealerTurn(deck, dealer_hand) {
+async function dealerTurn(deck, dealer_hand) {
   let can_play = true;
 
   const dealerHandContainer = document.getElementById("dealer-hand");
@@ -360,23 +360,29 @@ function resetGame() {
   if (playerHandContainer) playerHandContainer.innerHTML = "";
   if (dealerHandContainer) dealerHandContainer.innerHTML = "";
 
-  document.getElementById("new-round").style.display = "none";
-
-  document.getElementById("draw").style.display = "inline-block";
-  document.getElementById("stay").style.display = "inline-block";
-  document.getElementById("split").style.display = "inline-block";
-  document.getElementById("double").style.display = "inline-block";
+  // Show action buttons and hide the new-round button
+  const actionButtons = document.querySelectorAll('.actions button');
+  actionButtons.forEach(btn => {
+    if (btn.id === 'new-round') {
+      btn.style.display = 'none';
+    } else {
+      btn.style.display = 'inline-block';
+    }
+  });
 
   console.log("Game reset for new round");
 }
 
 function endGame() {
-  document.getElementById("draw").style.display = "none";
-  document.getElementById("stay").style.display = "none";
-  document.getElementById("split").style.display = "none";
-  document.getElementById("double").style.display = "none";
-
-  document.getElementById("new-round").style.display = "inline-block";
+  // Hide all action buttons and show only the new-round button
+  const actionButtons = document.querySelectorAll('.actions button');
+  actionButtons.forEach(btn => {
+    if (btn.id === 'new-round') {
+      btn.style.display = 'inline-block';
+    } else {
+      btn.style.display = 'none';
+    }
+  });
 }
 
 function checkAndRefillDeck(deck) {
@@ -401,8 +407,8 @@ function main(credits, deck) {
 
   playerTurn(
     deck,
-    () => {
-      dealerTurn(deck, dealer_hand);
+    async () => {
+      await dealerTurn(deck, dealer_hand);
 
       const playerHandContainer = document.getElementById('player-hand');
       const dealerHandContainer = document.getElementById('dealer-hand');
@@ -421,6 +427,7 @@ function main(credits, deck) {
       endGame();
 
       const newRoundBtn = document.getElementById("new-round");
+      newRoundBtn.style.display = "inline-block";
       newRoundBtn.onclick = function () {
         if (credits <= 0) {
           alert("Game Over! You have no more credits.");

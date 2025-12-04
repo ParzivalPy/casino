@@ -247,7 +247,7 @@ function playerTurn(deck, onPlayerEnd, player_hand, dealer_hand, onInitialDeal) 
   document.getElementById("stay").addEventListener("click", endTurn);
 }
 
-async function dealerTurn(deck, dealer_hand) {
+function dealerTurn(deck, dealer_hand) {
   let can_play = true;
 
   const dealerHandContainer = document.getElementById("dealer-hand");
@@ -263,14 +263,10 @@ async function dealerTurn(deck, dealer_hand) {
     }
   }
 
-  await sleep(300);
-
   const firstCard = draw(deck, dealer_hand);
   renderCard(firstCard, dealerHandContainer, false);
   printHand(dealer_hand);
   document.getElementById("dealer-score").innerText = formatHandScore(dealer_hand);
-
-  await sleep(600);
 
   while (can_play) {
     const score = countCardsInHand(dealer_hand);
@@ -301,18 +297,18 @@ function checkWinner(playerScore, dealerScore, credits, bet) {
   } else if (dealerScore > 21) {
     newCredits = newCredits + 2 * bet;
     changeCredsBet(0, newCredits);
-    return { message: `Player wins! Dealer busted.`, credits: newCredits };
+    return { message: "Player wins! Dealer busted.", credits: newCredits };
   } else if (playerScore > dealerScore) {
     newCredits = newCredits + 2 * bet;
     changeCredsBet(0, newCredits);
-    return { message: `Player wins!`, credits: newCredits };
+    return { message: "Player wins!", credits: newCredits };
   } else if (dealerScore > playerScore) {
     changeCredsBet(0, newCredits);
     return { message: "Dealer wins!", credits: newCredits };
   } else {
     newCredits += bet;
     changeCredsBet(0, newCredits);
-    return { message: `It's a tie!`, credits: newCredits };
+    return { message: "It's a tie!", credits: newCredits };
   }
 }
 

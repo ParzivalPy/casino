@@ -94,6 +94,9 @@ header > span > span {
   align-items: center;
   justify-content: center;
   gap: 30px;
+  /* Ensure the table area fills most of the viewport so cards sit vertically centered */
+  min-height: calc(100vh - 140px);
+  padding: 20px 0;
 }
 
 .dealer,
@@ -195,6 +198,26 @@ header > span > span {
   transform: rotateY(180deg);
   z-index: 1;
   padding: 20px 10% 20px 10%;
+}
+
+.verso .number {
+  font-size: 2.4rem; /* large rank */
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.verso .suit {
+  font-size: 2.4rem; /* large suit symbol */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.verso .number,
+.verso .suit {
+  font-size: 65px;
 }
 
 /* Red suit color for Hearts and Diamonds */

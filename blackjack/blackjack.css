@@ -109,7 +109,7 @@ header > span > span {
   background-color: #4169e1;
   border: 3px solid #c0c0c0;
   border-radius: 999px;
-  width: 50px;
+  width: 70px;
   padding: 2px 10px;
   display: flex;
   justify-content: center;
@@ -133,10 +133,25 @@ header > span > span {
   overflow: hidden;
   width: 125px;
   aspect-ratio: 2 / 3 !important;
+  transition: transform 0.6s ease, opacity 0.6s ease;
+  will-change: transform, opacity;
 }
 
-.turned {
-  transform: rotateY(180deg);
+.game-card-container .game-card {
+  animation: rotateCard 0.6s forwards;
+  .verso {
+    z-index: 3;
+  }
+}
+
+@keyframes rotateCard {
+  from {
+    transform: rotateY(90deg);
+  }
+  to {
+    transform: translateX(0);
+    transform: rotateY(180deg);
+  }
 }
 
 .game-card {
@@ -180,6 +195,11 @@ header > span > span {
   transform: rotateY(180deg);
   z-index: 1;
   padding: 20px 10% 20px 10%;
+}
+
+/* Red suit color for Hearts and Diamonds */
+.suit.red-suit {
+  color: #c62828;
 }
 
 /* -------------------------------------------- */

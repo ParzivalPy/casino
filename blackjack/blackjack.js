@@ -1,3 +1,4 @@
+// ...existing code...
 function deckCreation(deck_num) {
   let deck = [];
   const suits = ["Hearts", "Diamonds", "Clubs", "Spades"];
@@ -11,10 +12,10 @@ function deckCreation(deck_num) {
     "8",
     "9",
     "10",
-    "Jack",
-    "Queen",
-    "King",
-    "Ace",
+    "J",
+    "Q",
+    "K",
+    "A",
   ];
 
   for (let i = 0; i < deck_num; i++) {
@@ -36,31 +37,165 @@ function drawRandomCard(deck) {
 }
 
 function countCardsInHand(hand) {
-  let count = 0;
-  console.log("Counting hand:", hand);
+  // Compute the best numeric value for the hand: prefer the highest value <= 21.
+  let base = 0;
+  let aces = 0;
   for (let card of hand) {
-    if (
-      card.value === "Jack" ||
-      card.value === "Queen" ||
-      card.value === "King"
-    ) {
-      count += 10;
-    } else if (card.value === "Ace") {
-      count += count + 11 > 21 ? 1 : 11;
+    if (card.value === "J" || card.value === "Q" || card.value === "K") {
+      base += 10;
+    } else if (card.value === "A") {
+      aces += 1;
+      base += 1; // count ace as 1 for base
     } else {
-      count += parseInt(card.value);
+      base += parseInt(card.value);
     }
   }
-  return count;
+
+  // Try to upgrade some aces from 1 to 11 (each upgrade adds 10), keep highest <= 21
+  let best = base;
+  for (let i = 1; i <= aces; i++) {
+    const candidate = base + i * 10;
+    if (candidate <= 21) best = candidate;
+    else break;
+  }
+
+  return best;
+}
+
+/**
+ * Return a display string for a hand's score.
+ * If the hand contains an ace and a higher alternative <= 21 exists,
+ * return "min / max" (e.g. "8 / 18"). Otherwise return the single value.
+ */
+function formatHandScore(hand) {
+  let sum = 0;
+  let aces = 0;
+  for (let card of hand) {
+    if (card.value === "J" || card.value === "Q" || card.value === "K") {
+      sum += 10;
+    } else if (card.value === "A") {
+      aces += 1;
+      sum += 1; // count aces as 1 for the base sum
+    } else {
+      sum += parseInt(card.value);
+    }
+  }
+
+  if (aces === 0) return String(sum);
+
+  // Try to upgrade some aces from 1 to 11 (each upgrade adds 10) while <= 21
+  let maxCandidate = sum;
+  for (let i = 1; i <= aces; i++) {
+    const candidate = sum + i * 10;
+    if (candidate <= 21) maxCandidate = candidate;
+    else break;
+  }
+
+  if (maxCandidate > sum) {
+    return `${sum}/${maxCandidate}`;
+  }
+
+  return String(sum);
 }
 
 function draw(deck, hand) {
   if (deck.length === 0) {
     throw new Error("No cards left in the deck");
   }
+  // Backwards-compatible draw that just returns a card when no container
   const card = drawRandomCard(deck);
   hand.push(card);
   return card;
+}
+
+/**
+ * Reveal any facedown cards inside a hand container (DOM).
+ * Removes the `turned` class and fixes z-index so the recto is visible.
+ */
+function revealFaceDowns(handContainer) {
+  if (!handContainer) return;
+  const turnedCards = handContainer.querySelectorAll('.game-card');
+  turnedCards.forEach((gc) => {
+    gc.classList.add('turned');
+    const recto = gc.querySelector('.recto');
+    const verso = gc.querySelector('.verso');
+    if (recto) recto.style.zIndex = '1';
+    if (verso) verso.style.zIndex = '2';
+  });
+}
+
+/**
+ * Create a card DOM element and append it to the given hand container.
+ * The element is appended with the `incoming` class and then animated
+ * into place by removing that class on the next animation frame.
+ * facedown: if true the card element will be created with the `turned` class
+ */
+function renderCard(card, handContainer, facedown = false) {
+  if (!handContainer) return null;
+
+  // Container for the card (will receive transition via CSS)
+  const container = document.createElement("div");
+  container.className = "game-card-container incoming";
+
+  // The card element with front/back faces
+  const gameCard = document.createElement("div");
+  gameCard.className = "game-card" + (facedown ? "" : " turned");
+
+  const recto = document.createElement("div");
+  recto.className = "recto";
+
+  const verso = document.createElement("div");
+  verso.className = "verso";
+
+  // Number / rank
+  const number = document.createElement("div");
+  number.className = "number";
+  number.innerText = card.value;
+
+  // Suit (use unicode fallback)
+  const suit = document.createElement("div");
+  suit.className = "suit";
+  const suitMap = { Hearts: "♥", Diamonds: "♦", Clubs: "♣", Spades: "♠" };
+  suit.innerText = suitMap[card.suit] || card.suit;
+  // Color red for Hearts and Diamonds
+  if (card.suit === "Hearts" || card.suit === "Diamonds") {
+    suit.classList.add("red-suit");
+  }
+
+  const suitWrapper = document.createElement("div");
+  suitWrapper.className = "suit";
+  suitWrapper.appendChild(suit);
+
+  verso.appendChild(number);
+  verso.appendChild(suitWrapper);
+
+  gameCard.appendChild(recto);
+  gameCard.appendChild(verso);
+  container.appendChild(gameCard);
+
+  // Set z-index between recto and verso so the visible face sits on top.
+  // If facedown, verso must be on top; otherwise recto on top.
+  if (facedown) {
+    recto.style.zIndex = "2";
+    verso.style.zIndex = "1";
+  } else {
+    recto.style.zIndex = "1";
+    verso.style.zIndex = "2";
+  }
+
+  // Append to hand and trigger the CSS slide-in by removing `.incoming`
+  handContainer.appendChild(container);
+
+  // On next frame remove the incoming class so the CSS transition runs
+  requestAnimationFrame(() => {
+    container.classList.remove("incoming");
+    // Add a temporary sliding class in case CSS rules use it to animate faces
+    container.classList.add("sliding");
+    // Clean up the temporary class after the transition duration
+    setTimeout(() => container.classList.remove("sliding"), 650);
+  });
+
+  return container;
 }
 
 function printHand(hand, who) {
@@ -81,26 +216,46 @@ function playerTurnDraw(deck, hand, can_play, score) {
   }
 }
 
-function playerTurn(deck, onPlayerEnd, player_hand, dealer_hand) {
+function playerTurn(deck, onPlayerEnd, player_hand, dealer_hand, onInitialDeal) {
   let can_play = true;
 
-  // Initial draw for the player
+  const playerHandContainer = document.getElementById("player-hand");
+  const dealerHandContainer = document.getElementById("dealer-hand");
+
+  // Initial draw for the player (animated)
   for (let i = 0; i < 2; i++) {
-    player_hand.push(drawRandomCard(deck));
+    const card = draw(deck, player_hand);
+    renderCard(card, playerHandContainer, false);
   }
-  dealer_hand.push(drawRandomCard(deck));
-  score = countCardsInHand(dealer_hand);
-  document.getElementById("dealer-score").innerText = score;
+
+  // Dealer receives one facedown card initially
+  const dealerCard = draw(deck, dealer_hand);
+  renderCard(dealerCard, dealerHandContainer, true);
+
+  let score = countCardsInHand(dealer_hand);
+  document.getElementById("dealer-score").innerText = formatHandScore(dealer_hand);
   score = countCardsInHand(player_hand);
-  document.getElementById("player-score").innerText = score;
+  document.getElementById("player-score").innerText = formatHandScore(player_hand);
   printHand(player_hand);
+
+  // Call initial-deal callback so caller can detect immediate blackjack and resolve early
+  if (typeof onInitialDeal === "function") {
+    // If callback returns a truthy `handled` value, stop further player interaction
+    const handled = onInitialDeal(player_hand, dealer_hand);
+    if (handled) {
+      // disable further play
+      can_play = false;
+      return;
+    }
+  }
 
   // Callback functions for event listeners
   function drawCard() {
     if (can_play) {
       const card = draw(deck, player_hand);
+      renderCard(card, document.getElementById("player-hand"), false);
       const score = countCardsInHand(player_hand);
-      document.getElementById("player-score").innerText = score;
+      document.getElementById("player-score").innerText = formatHandScore(player_hand);
       printHand(player_hand);
 
       if (score >= 21) {
@@ -130,14 +285,36 @@ function playerTurn(deck, onPlayerEnd, player_hand, dealer_hand) {
 function dealerTurn(deck, dealer_hand) {
   let can_play = true;
 
-  dealer_hand.push(drawRandomCard(deck));
+  const dealerHandContainer = document.getElementById("dealer-hand");
+
+  // Reveal the facedown card (if any) by removing the `turned` class so its face shows
+  const facedownGameCard = dealerHandContainer.querySelector('.game-card.turned');
+  if (facedownGameCard) {
+    // Remove the turned class to visually flip the card
+    facedownGameCard.classList.remove('turned');
+
+    // Ensure recto/verso z-index are updated so recto is on top after reveal
+    const rectoEl = facedownGameCard.querySelector('.recto');
+    const versoEl = facedownGameCard.querySelector('.verso');
+    if (rectoEl && versoEl) {
+      rectoEl.style.zIndex = "2";
+      versoEl.style.zIndex = "1";
+    }
+  }
+
+  // Now draw the dealer's next (face-up) card and render it
+  const card = draw(deck, dealer_hand);
+  renderCard(card, dealerHandContainer, false);
   printHand(dealer_hand);
+  // update dealer score after reveal (formatted for aces)
+  document.getElementById("dealer-score").innerText = formatHandScore(dealer_hand);
 
   while (can_play) {
     const score = countCardsInHand(dealer_hand);
-    document.getElementById("dealer-score").innerText = score;
+    document.getElementById("dealer-score").innerText = formatHandScore(dealer_hand);
     if (score < 17) {
-      draw(deck, dealer_hand);
+      const c = draw(deck, dealer_hand);
+      renderCard(c, dealerHandContainer, false);
       printHand(dealer_hand);
     } else if (score > 21) {
       console.log("Dealer busts! Dealer exceeded 21 points.");
@@ -177,25 +354,29 @@ function checkWinner(playerScore, dealerScore, credits, bet) {
 
 function manageCredits(credits, bet) {
   console.log(`You currently have ${credits} credits.`);
-  bet = parseInt(prompt("Enter your bet amount: "), 10);
-  if (bet > credits) {
-    console.log("Not enough credits to place this bet.");
-    return credits; // Return unchanged credits
+  while (true) {
+    const input = prompt("Enter your bet amount: ");
+    // If user cancelled prompt, ask again
+    if (input === null) {
+      continue;
+    }
+    const parsed = Number(input);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      alert("Please enter a positive whole number for your bet.");
+      continue;
+    }
+    if (parsed > credits) {
+      alert("Not enough credits to place this bet.");
+      continue;
+    }
+    bet = parsed;
+    const remaining = credits - bet;
+    console.log(`Bet placed: ${bet}. Remaining credits: ${remaining}`);
+    return bet;
   }
-  credits -= bet;
-  console.log(`Bet placed: ${bet}. Remaining credits: ${credits}`);
-  return bet;
 }
 
-const card = document.querySelectorAll(".game-card");
-card.forEach((c) => {
-  c.addEventListener("transitionstart", () => {
-    setTimeout(() => {
-      c.lastChild.style.zIndex = 3;
-    }, 300);
-  });
-});
-
+// ...existing code...
 function changeCredsBet(bet, credits) {
   document.getElementById("bet").innerText = bet;
   document.getElementById("credits").innerText = credits;
@@ -205,7 +386,7 @@ function speech(sentence) {
   let text = new SpeechSynthesisUtterance(sentence);
 
   text.lang = "en";
-  text.rate = 1;
+  text.rate = 0.7;
   text.pitch = 1;
 
   window.speechSynthesis.speak(text);
@@ -218,6 +399,12 @@ function resetGame() {
 
   // Reset bet display
   document.getElementById("bet").innerText = "0";
+
+  // Remove any card DOM elements from both hands so the next round starts clean
+  const playerHandContainer = document.getElementById("player-hand");
+  const dealerHandContainer = document.getElementById("dealer-hand");
+  if (playerHandContainer) playerHandContainer.innerHTML = "";
+  if (dealerHandContainer) dealerHandContainer.innerHTML = "";
 
   // Hide new round button
   document.getElementById("new-round").style.display = "none";
@@ -271,6 +458,12 @@ function main(credits, deck) {
       // Transition to dealer turn after player ends their turn
       dealerTurn(deck, dealer_hand);
 
+      // Reveal any facedown cards before counting points
+      const playerHandContainer = document.getElementById('player-hand');
+      const dealerHandContainer = document.getElementById('dealer-hand');
+      revealFaceDowns(playerHandContainer);
+      revealFaceDowns(dealerHandContainer);
+
       // Calculate scores
       const playerScore = countCardsInHand(player_hand);
       const dealerScore = countCardsInHand(dealer_hand);
@@ -309,7 +502,57 @@ function main(credits, deck) {
       };
     },
     player_hand,
-    dealer_hand
+    dealer_hand,
+    // onInitialDeal callback: detect blackjacks and resolve immediately
+    (pHand, dHand) => {
+      const playerBJ = pHand.length === 2 && countCardsInHand(pHand) === 21;
+      const dealerBJ = dHand.length === 2 && countCardsInHand(dHand) === 21;
+
+      if (playerBJ || dealerBJ) {
+        if (playerBJ && !dealerBJ) {
+          // Player blackjack pays 3x the bet
+          credits = credits + 3 * bet;
+          changeCredsBet(0, credits);
+          const msg = `Blackjack! Player wins ${3 * bet} credits.`;
+          console.log(msg);
+          speech(msg);
+        } else if (dealerBJ && !playerBJ) {
+          // Dealer blackjack, player loses (no change)
+          changeCredsBet(0, credits);
+          const msg = `Dealer has blackjack. Dealer wins.`;
+          console.log(msg);
+          speech(msg);
+        } else {
+          // Both blackjack -> tie, return bet
+          credits += bet;
+          changeCredsBet(0, credits);
+          const msg = `Both have blackjack. It's a tie.`;
+          console.log(msg);
+          speech(msg);
+        }
+
+        // End the round early
+        endGame();
+
+        // Show new round button behavior
+        const newRoundBtn = document.getElementById("new-round");
+        newRoundBtn.onclick = function () {
+          if (credits <= 0) {
+            alert("Game Over! You have no more credits.");
+            location.reload();
+            return;
+          }
+          resetGame();
+          pHand.length = 0;
+          dHand.length = 0;
+          setTimeout(() => main(credits, deck), 100);
+        };
+
+        return true; // indicate handled/early-resolve
+      }
+
+      return false;
+    }
   );
 }
 
@@ -323,3 +566,4 @@ startButton.addEventListener("click", () => {
     main(credits, deck);
   }, 500);
 });
+// ...existing code...

@@ -94,7 +94,6 @@ header > span > span {
   align-items: center;
   justify-content: center;
   gap: 30px;
-  /* Ensure the table area fills most of the viewport so cards sit vertically centered */
   min-height: calc(100vh - 140px);
   padding: 20px 0;
 }
@@ -201,7 +200,7 @@ header > span > span {
 }
 
 .verso .number {
-  font-size: 2.4rem; /* large rank */
+  font-size: 2.4rem;
   font-weight: 700;
   display: flex;
   justify-content: center;
@@ -209,7 +208,7 @@ header > span > span {
 }
 
 .verso .suit {
-  font-size: 2.4rem; /* large suit symbol */
+  font-size: 2.4rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -220,7 +219,6 @@ header > span > span {
   font-size: 65px;
 }
 
-/* Red suit color for Hearts and Diamonds */
 .suit.red-suit {
   color: #c62828;
 }
